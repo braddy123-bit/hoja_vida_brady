@@ -39,7 +39,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
-# --- AQUÍ ESTÁ LO QUE FALTABA: Bloque TEMPLATES ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -73,14 +72,13 @@ USE_I18N = True
 USE_TZ = True
 
 # 6. Estáticos locales
-STATIC_URL = '/static/'  # Agregamos la barra / al inicio
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ==============================================================================
-# CONFIGURACIÓN DE AZURE STORAGE
+# CONFIGURACIÓN DE ALMACENAMIENTO (AZURE + WHITENOISE)
 # ==============================================================================
 AZURE_ACCOUNT_NAME = env('AZURE_ACCOUNT_NAME')
 AZURE_ACCOUNT_KEY = env('AZURE_ACCOUNT_KEY')
@@ -90,7 +88,7 @@ STORAGES = {
     "default": {
         "BACKEND": "storages.backends.azure_storage.AzureStorage",
     },
-   "staticfiles": {
+    "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
