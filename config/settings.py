@@ -11,7 +11,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
 
 # 2. Seguridad Básica
 SECRET_KEY = env('SECRET_KEY')
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG', default=False)
+
 ALLOWED_HOSTS = ['*']
 
 # 3. Aplicaciones
