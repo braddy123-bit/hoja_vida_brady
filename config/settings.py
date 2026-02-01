@@ -13,7 +13,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'), overwrite=True)
 SECRET_KEY = env('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "hoja-vida-brady.onrender.com"
+]
+
 
 # 3. Aplicaciones
 INSTALLED_APPS = [
