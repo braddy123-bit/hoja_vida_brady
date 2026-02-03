@@ -1,217 +1,109 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-import datetime
 
+def validar_no_futuro(value):
+    if value and value > timezone.now().date():
+        raise ValidationError("la fecha no puede ser futura.")
 
-class Perfil(models.Model):
-    nombres = models.CharField(max_length=100)
-    apellidos = models.CharField(max_length=100)
-    nacionalidad = models.CharField(max_length=50)
-    lugar_nacimiento = models.CharField(max_length=100)
-    fecha_nacimiento = models.DateField()
-
-    cedula = models.CharField(max_length=10, unique=True)
-
-    sexo = models.CharField(
-        max_length=10,
-        choices=[("Masculino", "Masculino"), ("Femenino", "Femenino"), ("Otro", "Otro")]
-    )
-    estado_civil = models.CharField(
-        max_length=20,
-        choices=[("Soltero", "Soltero"), ("Casado", "Casado"), ("Divorciado", "Divorciado"), ("Viudo", "Viudo")]
-    )
-    licencia_conducir = models.BooleanField(default=False)
-
-    telefono = models.CharField(max_length=20)
-    email = models.EmailField()
-    sitio_web = models.URLField(blank=True, null=True)
-
-    direccion_domiciliaria = models.CharField(max_length=200)
-    direccion_trabajo = models.CharField(max_length=200, blank=True, null=True)
-
-    profesion = models.CharField(max_length=100)
+class DATOSPERSONALES(models.Model):
+    nombres = models.CharField(max_length=60)
+    apellidos = models.CharField(max_length=60)
+    descripcionperfil = models.CharField(max_length=50)
+    nacionalidad = models.CharField(max_length=20)
+    lugarnacimiento = models.CharField(max_length=60)
+    fechanacimiento = models.DateField(validators=[validar_no_futuro])
+    numerocedula = models.CharField(max_length=10, unique=True)
+    sexo = models.CharField(max_length=1, choices=[("H", "hombre"), ("M", "mujer")])
+    estadocivil = models.CharField(max_length=50)
+    licenciaconducir = models.CharField(max_length=6, blank=True, null=True)
+    telefonoconvencional = models.CharField(max_length=15)
+    telefonofijo = models.CharField(max_length=15, blank=True, null=True)
+    direcciontrabajo = models.CharField(max_length=50, blank=True, null=True)
+    direcciondomiciliaria = models.CharField(max_length=50)
+    sitioweb = models.URLField(max_length=60, blank=True, null=True)
     descripcion = models.TextField()
-
     foto = models.ImageField(upload_to="perfil/", blank=True, null=True)
 
     class Meta:
-        verbose_name = "Perfil"
-        verbose_name_plural = "Datos Personales"
+        db_table = 'DATOSPERSONALES'
+        verbose_name = "datos personales"
 
     def clean(self):
         super().clean()
-        hoy = timezone.now().date()
-        
-        # Validación de fecha de nacimiento (Evita error NoneType)
-        if self.fecha_nacimiento and self.fecha_nacimiento > hoy:
-            raise ValidationError({"fecha_nacimiento": "La fecha de nacimiento no puede ser futura."})
-        
-        # Validación de cédula
-        if self.cedula:
-            if not self.cedula.isdigit() or len(self.cedula) != 10:
-                raise ValidationError({"cedula": "La cédula debe contener exactamente 10 dígitos numéricos."})
-        
-        # Validación de teléfono
-        if self.telefono:
-            if not self.telefono.isdigit():
-                raise ValidationError({"telefono": "El teléfono solo debe contener números."})
+        if self.numerocedula and (not self.numerocedula.isdigit() or len(self.numerocedula) != 10):
+            raise ValidationError({"numerocedula": "la cédula debe tener 10 dígitos numéricos."})
 
     def __str__(self):
         return f"{self.nombres} {self.apellidos}"
 
+class EXPERIENCIALABORAL(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="experiencias")
+    nombrempresa = models.CharField(max_length=50)
+    cargodesempenado = models.CharField(max_length=100)
+    fecha_inicio = models.DateField(validators=[validar_no_futuro])
+    fecha_fin = models.DateField(blank=True, null=True, validators=[validar_no_futuro])
+    descripcion = models.TextField()
 
-class Educacion(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="educaciones", null=True)
+    class Meta:
+        db_table = 'EXPERIENCIALABORAL'
+
+    def clean(self):
+        if self.fecha_inicio and self.fecha_fin and self.fecha_inicio > self.fecha_fin:
+            raise ValidationError("la fecha de inicio no puede ser mayor a la de fin.")
+
+class PRODUCTOSACADEMICOS(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="productos_academicos")
+    nombrerecurso = models.CharField(max_length=100)
+    clasificador = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=100)
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'PRODUCTOSACADEMICOS'
+
+class PRODUCTOSLABORALES(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="productos_laborales")
+    nombreproducto = models.CharField(max_length=100)
+    fechaproducto = models.DateField(validators=[validar_no_futuro])
+    descripcion = models.CharField(max_length=100)
+    activarparaqueseveaenfront = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'PRODUCTOSLABORALES'
+
+class RECONOCIMIENTOS(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="reconocimientos")
+    nombrereconocimiento = models.CharField(max_length=150)
     institucion = models.CharField(max_length=150)
-    titulo = models.CharField(max_length=150)
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField(blank=True, null=True)
+    fechareconocimiento = models.DateField(validators=[validar_no_futuro])
     descripcion = models.TextField(blank=True)
 
     class Meta:
-        verbose_name = "Educación"
-        verbose_name_plural = "Educación"
+        db_table = 'RECONOCIMIENTOS'
 
-    def clean(self):
-        super().clean()
-        hoy = timezone.now().date()
-        
-        if self.fecha_inicio and self.fecha_inicio > hoy:
-            raise ValidationError({"fecha_inicio": "La fecha de inicio no puede ser futura."})
-            
-        if self.fecha_fin:
-            if self.fecha_fin > hoy:
-                raise ValidationError({"fecha_fin": "La fecha de fin no puede ser futura."})
-            if self.fecha_inicio and self.fecha_inicio > self.fecha_fin:
-                raise ValidationError("La fecha de inicio no puede ser mayor que la fecha de fin.")
-
-    def __str__(self):
-        return f"{self.titulo} - {self.institucion}"
-
-
-class Experiencia(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="experiencias", null=True)
-    empresa = models.CharField(max_length=150)
-    cargo = models.CharField(max_length=150)
-    fecha_inicio = models.DateField()
-    fecha_fin = models.DateField(blank=True, null=True)
-    descripcion = models.TextField()
+class CURSOSREALIZADOS(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="cursos")
+    nombrecurso = models.CharField(max_length=150)
+    centroestudios = models.CharField(max_length=150)
+    fechafinalizacion = models.DateField(validators=[validar_no_futuro])
+    duracionhoras = models.PositiveIntegerField()
 
     class Meta:
-        verbose_name = "Experiencia"
-        verbose_name_plural = "Experiencias"
+        db_table = 'CURSOSREALIZADOS'
 
-    def clean(self):
-        super().clean()
-        hoy = timezone.now().date()
-        
-        if self.fecha_inicio and self.fecha_inicio > hoy:
-            raise ValidationError({"fecha_inicio": "La fecha de inicio no puede ser futura."})
-            
-        if self.fecha_fin:
-            if self.fecha_fin > hoy:
-                raise ValidationError({"fecha_fin": "La fecha de fin no puede ser futura."})
-            if self.fecha_inicio and self.fecha_inicio > self.fecha_fin:
-                raise ValidationError("La fecha de inicio no puede ser mayor que la fecha de fin.")
-
-    def __str__(self):
-        return f"{self.cargo} - {self.empresa}"
-
-
-class Habilidad(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="habilidades", null=True)
-    nombre = models.CharField(max_length=100)
-    nivel = models.IntegerField(help_text="Nivel del 1 al 10")
-
-    class Meta:
-        verbose_name = "Habilidad"
-        verbose_name_plural = "Habilidades"
-
-    def clean(self):
-        super().clean()
-        if self.nivel is not None:
-            if self.nivel < 1 or self.nivel > 10:
-                raise ValidationError({"nivel": "El nivel debe estar entre 1 y 10."})
-
-    def __str__(self):
-        return self.nombre
-
-
-class Certificado(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="certificados")
-    titulo = models.CharField(max_length=200)
-    institucion = models.CharField(max_length=200)
-    fecha = models.DateField()
-    imagen = models.ImageField(upload_to="certificados/")
-
-    class Meta:
-        verbose_name = "Certificado"
-        verbose_name_plural = "Certificados"
-
-    def clean(self):
-        super().clean()
-        hoy = timezone.now().date()
-        if self.fecha and self.fecha > hoy:
-            raise ValidationError({"fecha": "La fecha del certificado no puede ser futura."})
-
-    def __str__(self):
-        return self.titulo
-
-
-class Proyecto(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="proyectos")
-    nombre = models.CharField(max_length=200)
-    descripcion = models.TextField()
-    tecnologias = models.CharField(max_length=300)
-    github = models.URLField(blank=True, null=True)
-    demo = models.URLField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "Proyecto"
-        verbose_name_plural = "Proyectos"
-
-    def __str__(self):
-        return self.nombre
-
-
-class Referencia(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="referencias", null=True)
-    nombre = models.CharField(max_length=100)
-    empresa = models.CharField(max_length=100)
-    cargo = models.CharField(max_length=100)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "Referencia"
-        verbose_name_plural = "Referencias"
-
-    def __str__(self):
-        return f"{self.nombre} - {self.empresa}"
-
-
-class VentaGarage(models.Model):
-    perfil = models.ForeignKey("cv.Perfil", on_delete=models.CASCADE, related_name="ventas_garage")
-    nombre_producto = models.CharField(max_length=150)
-    descripcion = models.TextField()
-    precio = models.DecimalField(max_digits=8, decimal_places=2)
-    estado = models.CharField(
-        max_length=20,
-        choices=[("Nuevo", "Nuevo"), ("Usado", "Usado")]
-    )
+class VENTAGARAGE(models.Model):
+    idperfilconqueestaactivo = models.ForeignKey(DATOSPERSONALES, on_delete=models.CASCADE, related_name="ventas_garage")
+    nombreproducto = models.CharField(max_length=100)
+    estadoproducto = models.CharField(max_length=40)
+    descripcion = models.CharField(max_length=100)
+    valordelbien = models.DecimalField(max_digits=10, decimal_places=2)
     disponible = models.BooleanField(default=True)
     imagen = models.ImageField(upload_to="venta_garage/", blank=True, null=True)
-    fecha_publicacion = models.DateField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Venta de Garage"
-        verbose_name_plural = "Ventas de Garage"
+        db_table = 'VENTAGARAGE'
 
     def clean(self):
-        super().clean()
-        if self.precio is not None and self.precio < 0:
-            raise ValidationError({"precio": "El precio no puede ser negativo."})
-
-    def __str__(self):
-        return f"{self.nombre_producto} - ${self.precio}"
+        if self.valordelbien is not None and self.valordelbien < 0:
+            raise ValidationError("el valor del bien no puede ser negativo.")
