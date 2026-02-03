@@ -4,9 +4,76 @@
 <head>
     <meta charset="UTF-8">
     <title>Hoja de Vida</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    </head>
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 10px 25px rgba(0,0,0,.1);
+        }
+
+        .profile-img {
+            width: 170px;
+            height: 170px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid #0d6efd;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        }
+
+        .cert-card {
+            transition: all .3s ease;
+            cursor: pointer;
+        }
+
+        .cert-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(13,110,253,.35);
+        }
+
+        .icon {
+            color: #0d6efd;
+        }
+
+        .skill-badge {
+            background-color: #0d6efd;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 50px;
+            display: inline-block;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .ref-card {
+            border-left: 5px solid #0d6efd;
+        }
+
+        @media print {
+            nav, .btn, .modal {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
@@ -14,8 +81,26 @@
         <a class="navbar-brand fw-bold d-flex align-items-center text-primary" href="/">
             <i class="bi bi-arrow-left-circle-fill me-2"></i> Inicio
         </a>
-        <span class="navbar-text fw-medium me-auto d-none d-md-block">Hoja de Vida Automática</span>
-        </div>
+
+        <span class="navbar-text fw-medium me-auto d-none d-md-block" style="border-left: 1px solid #ddd; padding-left: 15px;">
+            Hoja de Vida Automática
+        </span>
+
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="#perfil">Perfil</a></li>
+            <li class="nav-item"><a class="nav-link" href="#educacion">Educación</a></li>
+            <li class="nav-item"><a class="nav-link" href="#experiencia">Experiencia</a></li>
+            <li class="nav-item"><a class="nav-link" href="#habilidades">Habilidades</a></li>
+            <li class="nav-item"><a class="nav-link" href="#certificados">Certificados</a></li>
+            <li class="nav-item"><a class="nav-link" href="#proyectos">Proyectos</a></li>
+            <li class="nav-item"><a class="nav-link" href="#referencias">Referencias</a></li>
+            <li class="nav-item"><a class="nav-link" href="#garage">Venta de Garage</a></li>
+        </ul>
+
+       <button class="btn btn-success ms-3" data-bs-toggle="modal" data-bs-target="#pdfOptionsModal">
+            <i class="bi bi-file-earmark-arrow-down"></i> Descargar Hoja de Vida
+        </button>
+    </div>
 </nav>
 
 <section id="perfil" class="container my-5">
@@ -28,52 +113,82 @@
                     <img src="{% static 'img/user.png' %}" class="profile-img">
                 {% endif %}
             </div>
+
             <div class="col-md-10">
                 <h2 class="fw-bold mb-1">{{ perfil.nombres }} {{ perfil.apellidos }}</h2>
-                <h5 class="text-primary mb-3">{{ perfil.descripcionperfil }}</h5>
+                <h5 class="text-primary mb-3">{{ perfil.profesion }}</h5>
                 <p class="px-md-5">{{ perfil.descripcion|linebreaksbr }}</p>
 
                 <hr class="my-4"> 
                 <div class="row text-start justify-content-center">
                     <div class="col-md-5">
                         <p><i class="bi bi-envelope icon"></i> {{ perfil.email }}</p>
-                        <p><i class="bi bi-telephone icon"></i> {{ perfil.telefonoconvencional }}</p>
-                        <p><i class="bi bi-telephone-fill icon"></i> {{ perfil.telefonofijo|default:"N/A" }}</p>
-                        <p><i class="bi bi-geo-alt icon"></i> {{ perfil.lugarnacimiento }}</p>
+                        <p><i class="bi bi-telephone icon"></i> {{ perfil.telefono }}</p>
+                        <p><i class="bi bi-geo-alt icon"></i> {{ perfil.lugar_nacimiento }}</p>
                     </div>
                     <div class="col-md-5">
-                        <p><i class="bi bi-person icon"></i> Sexo: {{ perfil.get_sexo_display }}</p>
+                        <p><i class="bi bi-person icon"></i> Sexo: {{ perfil.sexo }}</p>
                         <p><i class="bi bi-flag icon"></i> Nacionalidad: {{ perfil.nacionalidad }}</p>
-                        <p><i class="bi bi-card-text icon"></i> Cédula: {{ perfil.numerocedula }}</p>
-                        <p><i class="bi bi-heart icon"></i> Estado civil: {{ perfil.estadocivil }}</p>
+                        <p><i class="bi bi-card-text icon"></i> Cédula: {{ perfil.cedula }}</p>
+                        <p><i class="bi bi-heart icon"></i> Estado civil: {{ perfil.estado_civil }}</p>
                     </div>
                 </div>
+
+                {% if perfil.sitio_web %}
+                <div class="mt-3">
+                    <a href="{{ perfil.sitio_web }}" target="_blank" class="btn btn-dark btn-sm">
+                        <i class="bi bi-github"></i> GitHub / Portafolio
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </section>
 
-<section id="reconocimientos" class="container my-5">
-    <h4 class="mb-3"><i class="bi bi-trophy-fill me-2"></i> Reconocimientos</h4>
-    {% for rec in reconocimientos %}
+<section id="educacion" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-mortarboard-fill me-2"></i> Educación</h4>
+    {% for edu in educaciones %}
     <div class="section-card mb-3">
-        <strong>{{ rec.nombrereconocimiento }}</strong><br>
-        <span class="text-primary">{{ rec.institucion }}</span><br>
-        <small class="text-muted">{{ rec.fechareconocimiento }}</small>
-        <p class="mt-1">{{ rec.descripcion }}</p>
+        <strong>{{ edu.titulo }}</strong><br>
+        <span class="text-primary">{{ edu.institucion }}</span><br>
+        <small class="text-muted">{{ edu.fecha_inicio }} - {{ edu.fecha_fin|default:"Actualidad" }}</small>
     </div>
     {% endfor %}
 </section>
 
-<section id="cursos" class="container my-5">
-    <h4 class="mb-3"><i class="bi bi-journal-check me-2"></i> Cursos Realizados</h4>
+<section id="experiencia" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-briefcase-fill me-2"></i> Experiencia Laboral</h4>
+    {% for exp in experiencias %}
+    <div class="section-card mb-3">
+        <strong>{{ exp.cargo }}</strong><br>
+        <span class="text-primary">{{ exp.empresa }}</span><br>
+        <small class="text-muted">{{ exp.fecha_inicio }} - {{ exp.fecha_fin|default:"Actualidad" }}</small>
+        <p class="mt-2 mb-0">{{ exp.descripcion }}</p>
+    </div>
+    {% endfor %}
+</section>
+
+<section id="habilidades" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-cpu-fill me-2"></i> Habilidades</h4>
+    {% for hab in habilidades %}
+        <span class="skill-badge">{{ hab.nombre }}</span>
+    {% endfor %}
+</section>
+
+<section id="certificados" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-patch-check-fill me-2"></i> Certificados</h4>
     <div class="row">
-        {% for curso in cursos %}
-        <div class="col-md-6 mb-3">
-            <div class="section-card">
-                <strong>{{ curso.nombrecurso }}</strong><br>
-                <span>{{ curso.centroestudios }}</span><br>
-                <small class="text-muted">Finalizado: {{ curso.fechafinalizacion }} | Horas: {{ curso.duracionhoras }}</small>
+        {% for cert in certificados %}
+        <div class="col-md-4 mb-4">
+            <div class="section-card cert-card text-center">
+                {% if cert.imagen %}
+                <a href="{{ cert.imagen.url }}" target="_blank">
+                    <img src="{{ cert.imagen.url }}" class="img-fluid rounded mb-3">
+                </a>
+                {% endif %}
+                <strong>{{ cert.titulo }}</strong><br>
+                <small class="text-muted">{{ cert.institucion }}</small>
             </div>
         </div>
         {% endfor %}
@@ -87,11 +202,58 @@
         <div class="col-md-4 mb-4">
             <div class="section-card cert-card text-center">
                 {% if venta.imagen %}
-                    <img src="{{ venta.imagen.url }}" class="img-fluid rounded mb-3">
+                <a href="{{ venta.imagen.url }}" target="_blank">
+                    <img src="{{ venta.imagen.url }}" class="img-fluid rounded mb-3" style="max-height: 140px; object-fit: cover;">
+                </a>
                 {% endif %}
-                <strong>{{ venta.nombreproducto }}</strong><br>
-                <small class="text-muted">{{ venta.estadoproducto }}</small>
-                <span class="badge bg-success mt-2">$ {{ venta.valordelbien }}</span>
+                <strong>{{ venta.nombre_producto }}</strong><br>
+                <small class="text-muted d-block mt-1">{{ venta.descripcion|truncatechars:60 }}</small>
+                <span class="badge bg-success mt-2">$ {{ venta.precio }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No hay productos disponibles.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="proyectos" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-rocket-takeoff-fill me-2"></i> Proyectos</h4>
+    <div class="row">
+        {% for proyecto in proyectos %}
+        <div class="col-md-6 mb-4">
+            <div class="section-card">
+                <strong>{{ proyecto.nombre }}</strong>
+                <p class="mt-2">{{ proyecto.descripcion }}</p>
+                <small class="text-muted">Tecnologías: {{ proyecto.tecnologias }}</small>
+                <div class="mt-2">
+                    {% if proyecto.github %}
+                        <a href="{{ proyecto.github }}" target="_blank" class="btn btn-dark btn-sm me-2">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                    {% endif %}
+                    {% if proyecto.demo %}
+                        <a href="{{ proyecto.demo }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            Demo
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section id="referencias" class="container my-5">
+    <h4 class="mb-3"><i class="bi bi-people-fill me-2"></i> Referencias</h4>
+    <div class="row">
+        {% for ref in referencias %}
+        <div class="col-md-4 mb-3">
+            <div class="section-card ref-card">
+                <strong class="text-primary">{{ ref.nombre }}</strong><br>
+                {{ ref.cargo }}<br>
+                <small>{{ ref.empresa }}</small><br>
+                <small>{{ ref.telefono }} | {{ ref.email }}</small>
             </div>
         </div>
         {% endfor %}
@@ -99,5 +261,55 @@
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function generatePDF() {
+    const hiddenSections = [];
+    document.querySelectorAll(".pdf-option").forEach(function(cb) {
+        const section = document.querySelector(cb.value);
+        if (section && !cb.checked) {
+            section.style.display = "none";
+            hiddenSections.push(section);
+        }
+    });
+    const modalEl = document.getElementById("pdfOptionsModal");
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    setTimeout(function () {
+        window.print();
+        hiddenSections.forEach(function(sec) {
+            sec.style.display = "";
+        });
+    }, 300);
+}
+</script>
+
+<div class="modal fade" id="pdfOptionsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Seleccionar contenido del PDF</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Elige qué secciones deseas incluir:</p>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#perfil" checked><label class="form-check-label">Perfil</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#educacion" checked><label class="form-check-label">Educación</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#experiencia" checked><label class="form-check-label">Experiencia</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#habilidades" checked><label class="form-check-label">Habilidades</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#certificados" checked><label class="form-check-label">Certificados</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#proyectos" checked><label class="form-check-label">Proyectos</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#referencias" checked><label class="form-check-label">Referencias</label></div>
+        <div class="form-check"><input class="form-check-input pdf-option" type="checkbox" value="#garage"><label class="form-check-label">Venta de Garage</label></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="generatePDF()">Generar PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
