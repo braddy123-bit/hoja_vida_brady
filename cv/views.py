@@ -1,6 +1,12 @@
 from django.shortcuts import render
 from .models import DATOSPERSONALES
 
+# esta es la función que te falta y causa el error
+def home(request):
+    perfil = DATOSPERSONALES.objects.first()
+    return render(request, 'cv/home.html', {'perfil': perfil})
+
+# esta es la función para ver el currículum detallado
 def cv_view(request):
     perfil = DATOSPERSONALES.objects.first()
 
